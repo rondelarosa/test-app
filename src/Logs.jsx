@@ -1,18 +1,18 @@
 import React, { useState, useReducer, useEffect, useRef } from "react";
 import useIsMountedRef from "./hooks/useIsMountedRef";
 
-function greetingReducer(state, action) {
+function resultsReducer(state, action) {
   switch (action.type) {
     case "SUCCESS": {
       return {
         error: null,
-        greeting: action.greeting,
+        payload: action.data,
       };
     }
     case "ERROR": {
       return {
         error: action.error,
-        greeting: null,
+        payload: null,
       };
     }
     default: {
@@ -21,11 +21,11 @@ function greetingReducer(state, action) {
   }
 }
 
-const initialState = { error: null, greeting: "hello there" };
+const initialState = { error: null, payload: { results: [], totalResults: 0 } };
 
 export default function Filter({ url }) {
-  const [{ error, greeting }, dispatch] = useReducer(
-    greetingReducer,
+  const [{ error, payload }, dispatch] = useReducer(
+    resultsReducer,
     initialState
   );
   const [buttonClicked, setButtonClicked] = useState(false);
@@ -51,9 +51,9 @@ export default function Filter({ url }) {
       { signal }
     )
       .then(async (response) => {
-        const { greeting } = await response.json();
+        const data = await response.json();
         if (isMounted.current) {
-          dispatch({ type: "SUCCESS", greeting });
+          dispatch({ type: "SUCCESS", data });
           setButtonClicked(true);
         }
       })
@@ -64,7 +64,7 @@ export default function Filter({ url }) {
         }
       });
 
-  const fetchGreeting = async () => {
+  const fetchresults = async () => {
     // when it has previous request cancel
     if (abortCont.current) abortCont.current.abort();
     // create new fetch connection
@@ -74,14 +74,16 @@ export default function Filter({ url }) {
     await fetchCall(url, abortCont.current.signal);
   };
 
-  const buttonText = buttonClicked ? "Ok" : "Load Greeting";
-
+  const buttonText = buttonClicked ? "Ok" : "Load logs";
+  
   return (
     <div>
-      <button onClick={fetchGreeting} disabled={buttonClicked}>
+      <button onClick={fetchresults} disabled={buttonClicked}>
         {buttonText}
       </button>
-      {greeting && <h1>{greeting}</h1>}
+      {payload && payload.results.map((m, i) => {
+        return <h1 key={i.toString()} data-testid="log-id">{m.id}</h1>;
+      })}
       {error && <p role="alert">Oops, failed to fetch!</p>}
     </div>
   );
