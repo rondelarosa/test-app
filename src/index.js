@@ -4,9 +4,10 @@ import './index.css';
 import App from './App';
 import * as serviceWorker from './serviceWorker';
 
+const props = {test:"Home", data:"data2"};
 ReactDOM.render(
   <React.StrictMode>
-    <App />
+    <App {...props}/>
   </React.StrictMode>,
   document.getElementById('root')
 );
